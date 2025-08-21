@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Admin Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav h1 {
+            margin: 0;
+        }
+
+        .nav-menu span {
+            margin-left: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        .nav-menu span:hover {
+            background-color: #34495e;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        section {
+            display: none;
+        }
+
+        section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ccc;
+        }
+
+        .profile-details {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .profile-details p {
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+        }
+
+        .profile-actions {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn.add {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .btn.delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn.preview {
+            background-color: #3498db;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .profile-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .profile-img {
+                margin-bottom: 1rem;
+            }
+        }
+
+        .alert-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            animation: fadeIn 0.5s ease-in-out;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.info {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .alert .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 220px;
+            height: 100%;
+            background-color: #2c3e50;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: left 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 0.7rem 1rem;
+            background-color: #34495e;
+            border-radius: 5px;
+        }
+
+        .sidebar a:hover {
+            background-color: #1abc9c;
+        }
+
+        .sidebar .close-btn {
+            align-self: flex-end;
+            background: none;
+            color: white;
+            font-size: 1.5rem;
+            border: none;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        /* Overlay behind sidebar */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            z-index: 999;
+        }
+
+        /* Toggle active */
+        .sidebar.active {
+            left: 0;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Hide desktop nav menu on mobile */
+        @media (max-width: 768px) {
+            .nav-menu span {
+                display: none;
+            }
+
+            .nav-toggle {
+                display: block;
+                font-size: 1.8rem;
+                cursor: pointer;
+                color: white;
+            }
+        }
+
+        @media (min-width: 769px) {
+
+            .sidebar,
+            .overlay {
+                display: none !important;
+            }
+
+            .nav-toggle {
+                display: none;
+            }
+        }
+    </style>
+    <style>
+        /* === Base Table (Desktop) === */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ccc;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #ecf0f1;
+        }
+
+        .btn {
+            padding: 0.4rem 0.8rem;
+            margin: 0.2rem 0.2rem 0 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+
+        .btn.edit {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn.delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn.preview {
+            background-color: #9b59b6;
+            color: white;
+        }
+
+        .small-img {
+            width: 200px;
+            height: 100px;
+            border-radius: 4px;
+            object-fit: cover;
+            margin-top: 0.5rem;
+        }
+
+        .lang-tag {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            margin: 0.1rem;
+            font-size: 0.75rem;
+            border-radius: 3px;
+        }
+
+        .responsive-table {
+            display: none;
+            /* Hidden by default, shown on mobile */
+        }
+
+        /* === Responsive Card Layout (Mobile Only) === */
+        @media (max-width: 768px) {
+            table {
+                display: none;
+            }
+
+            .responsive-table {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .responsive-card {
+                background-color: #fff;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                padding: 1rem;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            }
+
+            .responsive-card h4 {
+                margin: 0 0 0.5rem;
+                font-size: 1.1rem;
+                color: #2c3e50;
+            }
+
+            .responsive-card .row {
+                margin-bottom: 0.4rem;
+            }
+
+            .responsive-card img.small-img {
+                width: 100%;
+                height: auto;
+                margin-top: 0.5rem;
+            }
+
+            .responsive-card .lang-tag {
+                margin-top: 0.3rem;
+            }
+
+            .responsive-card .actions {
+                margin-top: 0.8rem;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    {% set active_section = active_section or 'projects' %}
+    <p>Currently active: {{ active_section }}</p>
+
+
+    <div class="alert-wrapper" id="alertWrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert {{ 'success' if category == 'success' else 'error' if category == 'danger' else 'info' }}">
+            <span>{{ message }}</span>
+            <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+
+    <nav>
+        <h1>Admin Dashboard</h1>
+
+        <div class="nav-menu">
+            <span onclick="showSection('projects')">Projects</span>
+            <span onclick="showSection('blogs')"> Blogs</span>
+            <span onclick="showSection('certificates')"> Certificates</span>
+            <span onclick="showSection('messages')"> Messages</span>
+            <span onclick="showSection('profile')">👤 Profile</span>
+        </div>
+        <div class="nav-toggle" onclick="toggleSidebar()">☰</div>
+    </nav>
+
+
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="toggleSidebar()">×</button>
+        <a href="#" onclick="showSection('projects')">📁 Projects</a>
+        <a href="#" onclick="showSection('blogs')">📝 Blogs</a>
+        <a href="#" onclick="showSection('certificates')">🎓 Certificates</a>
+        <a href="#" onclick="showSection('messages')">📬 Messages</a>
+        <a href="#" onclick="showSection('profile')">👤 Profile</a>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+
+
+    <main>
+        <!-- Project Section -->
+        <section id="projects" class="{% if active_section == 'projects' %}active{% endif %}">
+            <h2>All Projects</h2>
+            <a href="/add_project" class="btn add">Add Project</a>
+            <br><br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>GitHub</th>
+                        <th>Preview</th>
+                        <th>Languages</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in projects %}
+                    <tr>
+                        <td><strong>{{ p[1] }}</strong><br>
+                            {% if p[3] %}
+                            <img src="{{ url_for('static', filename='uploads/' + p[3]) }}" class="small-img" />
+                            {% else %}
+                            <span>No image</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <p>{{ p[5] }}</p>
+                        </td>
+                        <td>{{ p[6][:80] }}...</td>
+
+                        <td><a href="{{ p[2] }}" class="btn preview">GitHub</a></td>
+
+                        <td>
+                            {% if p[4] %}
+                            <a href="{{ url_for('static', filename='uploads/' + p[4]) }}" class="btn preview">Video</a>
+                            {% else %}
+                            <span>No video</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p[7] %}
+                            {% for lang in p[7].split(',') %}
+                            <span class="lang-tag">{{ lang.strip()
+                                }}</span>
+                            {% endfor %}
+                            {% else %}
+                            <span>—</span>
+                            {% endif %}
+                        </td>
+                        <td><a href="/edit_project/{{ p[0] }}" class="btn edit">Edit</a>
+                            <a href="/delete_project/{{ p[0] }}" class="btn delete">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- === Mobile Responsive Cards === -->
+            <div class="responsive-table">
+                {% for p in projects %}
+                <div class="responsive-card">
+                    <h4><strong>Title :</strong > {{ p[1] }}</h4>
+
+                    {% if p[3] %}
+                    <img src="{{ url_for('static', filename='uploads/' + p[3]) }}" class="small-img" />
+                    {% else %}
+                    <p><strong>Image:</strong> No image</p>
+                    {% endif %}
+
+                    <div class="row"><strong>Category:</strong> {{ p[5] }}</div>
+                    <div class="row"><strong>Description:</strong> {{ p[6][:100] }}...</div>
+                    <div class="row"><strong>GitHub:</strong> <a href="{{ p[2] }}" class="btn preview">View</a></div>
+
+                    <div class="row">
+                        <strong>Video:</strong>
+                        {% if p[4] %}
+                        <a href="{{ url_for('static', filename='uploads/' + p[4]) }}" class="btn preview">Watch</a>
+                        {% else %}
+                        <span>No video</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <strong>Languages:</strong><br>
+                        {% if p[7] %}
+                        {% for lang in p[7].split(',') %}
+                        <span class="lang-tag">{{ lang.strip() }}</span>
+                        {% endfor %}
+                        {% else %}
+                        <span>—</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="actions">
+                        <a href="/edit_project/{{ p[0] }}" class="btn edit">Edit</a>
+                        <a href="/delete_project/{{ p[0] }}" class="btn delete">Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section id="blogs" class="{% if active_section == 'blogs' %}active{% endif %}">
+            <h2>All Blogs</h2>
+            <a href="/add_blog" class="btn add">Add Blog</a>
+            <br><br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Image</th>
+                        <th>Summary</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in blogs %}
+                    <tr>
+                        <td>{{ b[1] }}</td>
+                        <td>{{ b[3] }}</td>
+                        <td>
+                            {% if b[4] %}
+                            <img src="{{ url_for('static', filename='uploads/' + b[4]) }}" class="small-img"
+                                alt="Blog Image" />
+                            {% else %}
+                            <span>No Image</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ b[2][:80] }}...</td>
+                        <td>{{ b[5]|timeago }}</td>
+                        <td>
+                            <a href="/edit_blog/{{ b[0] }}" class="btn edit">Edit</a>
+                            <a href="/delete_blog/{{ b[0] }}" class="btn delete">Delete</a>
+                        </td>
+                    </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+            <!-- === Mobile Responsive Card Layout === -->
+            <div class="responsive-table">
+                {% for b in blogs %}
+                <div class="responsive-card">
+                    <h4><strong>Title :</strong > {{ b[1] }}</h4>
+                    <div class="row"><strong>Category:</strong> {{ b[3] }}</div>
+
+                    {% if b[4] %}
+                    <img src="{{ url_for('static', filename='uploads/' + b[4]) }}" class="small-img" alt="Blog Image" />
+                    {% else %}
+                    <div class="row"><strong>Image:</strong> No Image</div>
+                    {% endif %}
+
+                    <div class="row"><strong>Summary:</strong> {{ b[2][:100] }}...</div>
+                    <div class="row"><strong>Created:</strong> {{ b[5]|timeago }}</div>
+
+                    <div class="actions">
+                        <a href="/edit_blog/{{ b[0] }}" class="btn edit">Edit</a>
+                        <a href="/delete_blog/{{ b[0] }}" class="btn delete">Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+        </section>
+
+        <!-- Certificate Section -->
+        <section id="certificates" class="{% if active_section == 'certificates' %}active{% endif %}">
+            <h2>All Certificates</h2>
+            <a href="/add_certificate" class="btn add">Add Certificate</a>
+            <br><br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Organization</th>
+                        <th>Issued Date</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in certs %}
+                    <tr>
+                        <td>{{ c[1] }}</td>
+                        <td>{{ c[2] }}</td>
+                        <td>{{ c[3] }}</td>
+                        <td>
+                            {% if c[4] %}
+                            <img src="{{ url_for('static', filename='uploads/' + c[4]) }}" class="small-img" />
+                            {% else %}
+                            <span>No Image</span>
+                            {% endif %}
+                        </td>
+                        <td><a href="/edit_certificate/{{ c[0] }}" class="btn edit">Edit</a>
+                            <a href="/delete_certificate/{{ c[0] }}" class="btn delete">Delete</button></a>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- ===== Mobile Responsive Card View ===== -->
+            <div class="responsive-table">
+                {% for c in certs %}
+                <div class="responsive-card">
+                    <h4><strong>Title :</strong > {{ c[1] }}</h4>
+                    <div class="row"><strong>Organization:</strong> {{ c[2] }}</div>
+                    <div class="row"><strong>Issued Date:</strong> {{ c[3] }}</div>
+
+                    {% if c[4] %}
+                    <img src="{{ url_for('static', filename='uploads/' + c[4]) }}" class="small-img" />
+                    {% else %}
+                    <div class="row"><strong>Image:</strong> No Image</div>
+                    {% endif %}
+
+                    <div class="actions">
+                        <a href="/edit_certificate/{{ c[0] }}" class="btn edit">Edit</a>
+                        <a href="/delete_certificate/{{ c[0] }}" class="btn delete">Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+
+        </section>
+
+        <!-- 🔁 Contact Message Reply Section -->
+        <section id="messages" class="{% if active_section == 'messages' %}active{% endif %}">
+            <h2>User Messages & Replies</h2>
+            <div style="margin-bottom: 1rem;">
+                <form method="POST" action="/search_messages">
+                    <select id="filterType" name="filter_type">
+                        <option value="name">Name</option>
+                        <option value="subject">Subject</option>
+                        <option value="message">Message</option>
+                    </select>
+                    <input type="text" id="searchInput" name="search_text" placeholder="Search...">
+                    <button class="btn preview">Search</button>
+
+                </form>
+                <form id="bulkDeleteForm" method="POST" action="/delete_selected_messages">
+                    <button type="submit" class="delete-all">Delete Selected</button>
+                </form>
+                <!-- <button class="delete-all">Delete Selected</button> -->
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" /></th>
+                        <th>#</th>
+                        <th class="search-name">Name</th>
+                        <th>Email</th>
+                        <th class="search-subject">Subject</th>
+                        <th class="search-message">Message</th>
+                        <th>Reply</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in messages %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_ids" form="bulkDeleteForm" value="{{ m[0] }}"
+                                class="message-checkbox" /></td>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ m[1] }}</td>
+                        <td>{{ m[2] }}</td>
+
+                        <td>{{m[3]}}</td>
+                        <td>{{ m[4] }}</td>
+                        <td>
+                            {% if not m[6] %}
+                            <form method="POST" action="/reply_message/{{ m[0] }}">
+                                <input type="text" name="reply" placeholder="Reply..." required />
+                                <br><br>
+                                <button type="submit" class="btn Send">Send</button>
+                            </form>
+                            {% else %}
+                            <span>{{ m[6] }}</span><br>
+                            <small>at {{ m[7] }}</small>
+                            {% endif %}
+                        </td>
+
+
+                        <td>
+                            {% if m[8] == 'Success' %}
+                            <span class="text-green-600">✔ {{ m[8] }}</span>
+                            {% elif m[8] == 'Failed' %}
+                            <span class="text-red-600">✖ {{ m[8] }}</span>
+                            {% else %}
+                            <span class="text-gray-500">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ m[5] }}</td>
+                        <td><a href="/delete_message/{{ m[0] }}" class="btn delete">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="responsive-table">
+                <input type="checkbox" id="selectAll" />
+                {% for m in messages %}
+                <div class="responsive-card">
+                    <input type="checkbox" name="selected_ids" form="bulkDeleteForm" value="{{ m[0] }}"
+                        class="message-checkbox" />
+                    <div class="row"><strong>#{{ loop.index }} | Name:</strong> {{ m[1] }}</div>
+                    <div class="row"><strong>Email:</strong> {{ m[2] }}</div>
+                    <div class="row"><strong>Subject:</strong> {{ m[3] }}</div>
+                    <div class="row"><strong>Message:</strong> {{ m[4] }}</div>
+                    <div class="row"><strong>Date:</strong> {{ m[5] }} </div>
+
+                    <div class="row">
+                        <strong>Reply:</strong><br>
+                        {% if not m[6] %}
+                        <form method="POST" action="/reply_message/{{ m[0] }}">
+                            <input type="text" name="reply" placeholder="Reply..." required />
+                            <button type="submit" class="btn Send">Send</button>
+                        </form>
+                        {% else %}
+                        <span>{{ m[6] }}</span><br>
+                        <small>at {{ m[7] }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <strong>Status:</strong>
+                        {% if m[8] == 'Success' %}
+                        <span class="text-green-600 status">✔ {{ m[8] }}</span>
+                        {% elif m[8] == 'Failed' %}
+                        <span class="text-red-600 status">✖ {{ m[8] }}</span>
+                        {% else %}
+                        <span class="text-gray-500 status">Pending</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="actions">
+                        <a href="/delete_message/{{ m[0] }}" class="btn delete">Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+        </section>
+
+        <!-- Profile section -->
+        <section id="profile" class="{% if active_section == 'profile' %}active{% endif %}">
+
+            <h2>Admin Profile</h2>
+            <div class="profile-container">
+                {% if profile %}
+                {% if profile[2] %}
+                <img src="{{ url_for('static', filename='uploads/' + profile[2]) }}" alt="Ganesh Raut"
+                    class="profile-img" />
+                {% endif %}
+                <div>
+                    <p><strong>Name:</strong> {{ profile[1] }}</p>
+                    {% if profile[3] %}
+                    <a href="{{ url_for('resume', filename=profile[3]) }}" download class="btn preview">Download
+                        Resume</a>
+                    {% endif %}
+                    <br><br>
+                    <a href="/profile" class="btn add">Edit</a>
+
+                    <a href="/delete_profile" class="btn delete">Delete Profile</a>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-gray-500">No profile added yet.</p>
+            <!-- <a href="/profile">Add Profile</a> -->
+            <a href="/profile" class="btn add">Add Profile</a>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        // If the page is refreshed and not already on /dashboard, redirect to it
+        if (performance.navigation.type === 1 && window.location.pathname !== "/dashboard") {
+            window.location.href = "/dashboard";
+        }
+
+        function closeAlert() {
+            document.getElementById('alertWrapper').style.display = 'none';
+        }
+
+        function toggleAll(source) {
+            const checkboxes = document.querySelectorAll('input[name="selected_ids"]');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+        }
+
+        function filterMessages() {
+            const type = document.getElementById('filterType').value;
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#messages tbody tr');
+
+            rows.forEach(row => {
+                const value = row.querySelector(`.search-${type}`)?.textContent.toLowerCase() || '';
+                row.style.display = value.includes(input) ? '' : 'none';
+            });
+        }
+
+        document.getElementById('selectAll').addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('.message-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+
+    </script>
+    <script>
+        function showSection(id) {
+            document.querySelectorAll('main section').forEach(section => {
+                section.classList.remove('active');
+            });
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.add('active');
+                const url = new URL(window.location);
+                url.searchParams.set('active_section', id);
+                window.history.pushState({}, '', url);
+            }
+        }
+
+        // Restore section on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const active = params.get('active_section');
+            if (active) showSection(active);
+        });
+        // Auto close alerts
+        const alerts = document.querySelectorAll(".alert");
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.classList.add("opacity-0");
+                setTimeout(() => alert.remove(), 500);
+            }, 3000);
+        });
+
+    </script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+    </script>
+
+
+
+</body>
+
+</html>

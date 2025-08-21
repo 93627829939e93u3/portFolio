@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* CSS variables for theme colors */
+        :root {
+            /* Light mode colors */
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --shape-color: rgba(255, 255, 255, 0.1);
+            --container-bg: rgba(255, 255, 255, 0.15);
+            --container-border: rgba(255, 255, 255, 0.2);
+            --text-primary: white;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --message-user-bg: rgba(255, 255, 255, 0.9);
+            --message-user-text: #333;
+            --message-bot-bg: rgba(255, 255, 255, 0.2);
+            --message-bot-text: white;
+            --message-bot-border: rgba(255, 255, 255, 0.3);
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-text: #333;
+            --input-placeholder: #666;
+            --input-focus-bg: white;
+            --input-focus-shadow: rgba(255, 255, 255, 0.3);
+            --scrollbar-track: rgba(255, 255, 255, 0.1);
+            --scrollbar-thumb: rgba(255, 255, 255, 0.3);
+            --scrollbar-thumb-hover: rgba(255, 255, 255, 0.5);
+            --typing-dot: rgba(255, 255, 255, 0.7);
+            --nav-button-bg: rgba(255, 255, 255, 0.2);
+            --nav-button-hover: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Dark mode colors when checkbox is checked */
+        #theme-toggle:checked ~ * {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --shape-color: rgba(100, 149, 237, 0.1);
+            --container-bg: rgba(0, 0, 0, 0.3);
+            --container-border: rgba(100, 149, 237, 0.2);
+            --text-primary: #e0e0e0;
+            --text-secondary: rgba(224, 224, 224, 0.7);
+            --message-user-bg: rgba(100, 149, 237, 0.8);
+            --message-user-text: white;
+            --message-bot-bg: rgba(0, 0, 0, 0.4);
+            --message-bot-text: #e0e0e0;
+            --message-bot-border: rgba(100, 149, 237, 0.3);
+            --input-bg: rgba(0, 0, 0, 0.5);
+            --input-text: #e0e0e0;
+            --input-placeholder: #999;
+            --input-focus-bg: rgba(0, 0, 0, 0.7);
+            --input-focus-shadow: rgba(100, 149, 237, 0.3);
+            --scrollbar-track: rgba(0, 0, 0, 0.2);
+            --scrollbar-thumb: rgba(100, 149, 237, 0.4);
+            --scrollbar-thumb-hover: rgba(100, 149, 237, 0.6);
+            --typing-dot: rgba(224, 224, 224, 0.7);
+            --nav-button-bg: rgba(100, 149, 237, 0.2);
+            --nav-button-hover: rgba(100, 149, 237, 0.3);
+        }
+
+        /* Hidden checkbox for theme toggle */
+        #theme-toggle {
+            display: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Animated Background Shapes */
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            background: var(--shape-color);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            transition: background 0.3s ease;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            left: 80%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 70%;
+            animation-delay: 1s;
+        }
+
+        .shape:nth-child(5) {
+            width: 140px;
+            height: 140px;
+            top: 40%;
+            left: 5%;
+            animation-delay: 3s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.8;
+            }
+        }
+
+        /* Navigation styles for multi-page functionality */
+        .nav-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--nav-button-bg);
+            border: 1px solid var(--container-border);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
+            font-size: 18px;
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        .nav-button:hover {
+            background: var(--nav-button-hover);
+            transform: scale(1.1);
+        }
+
+        .menu-button {
+            right: 80px;
+            left: auto;
+        }
+
+        /* Page container for switching between pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Navigation menu */
+        .nav-menu {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--container-border);
+            border-radius: 15px;
+            padding: 15px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 200;
+            min-width: 150px;
+        }
+
+        .nav-menu.active {
+            display: flex;
+        }
+
+        .nav-menu-item {
+            background: var(--nav-button-bg);
+            border: 1px solid var(--container-border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-menu-item:hover {
+            background: var(--nav-button-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .chatbot-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .chatbot-header {
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--container-border);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .chatbot-title {
+            color: var(--text-primary);
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .chatbot-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        /* Theme toggle switch styling */
+        .theme-toggle-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .theme-toggle-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background: var(--container-bg);
+            border: 1px solid var(--container-border);
+            border-radius: 25px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle-label:hover {
+            transform: scale(1.05);
+        }
+
+        .theme-icon {
+            font-size: 16px;
+            margin: 0 4px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-icon.sun {
+            color: #ffd700;
+        }
+
+        .theme-icon.moon {
+            color: #87ceeb;
+        }
+
+        #theme-toggle:checked ~ .chatbot-container .theme-icon.sun {
+            opacity: 0.3;
+        }
+
+        #theme-toggle:not(:checked) ~ .chatbot-container .theme-icon.moon {
+            opacity: 0.3;
+        }
+
+        .toggle-slider {
+            width: 40px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            margin: 0 8px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        #theme-toggle:checked ~ .chatbot-container .toggle-slider::after {
+            transform: translateX(20px);
+        }
+
+        /* Content area styles for other pages */
+        .content-area {
+            flex: 1;
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--container-border);
+            border-right: 1px solid var(--container-border);
+            padding: 30px;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .content-area h2 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .content-area h3 {
+            color: var(--text-primary);
+            margin: 20px 0 10px 0;
+            font-size: 20px;
+        }
+
+        .content-area p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .content-area ul {
+            color: var(--text-secondary);
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .settings-option {
+            background: var(--nav-button-bg);
+            border: 1px solid var(--container-border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-option label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .settings-option input[type="range"] {
+            width: 100px;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--container-border);
+            border-right: 1px solid var(--container-border);
+            padding: 20px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        /* Messages */
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            animation: messageSlide 0.3s ease-out;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+        }
+
+        .message.user {
+            background: var(--message-user-bg);
+            color: var(--message-user-text);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot {
+            background: var(--message-bot-bg);
+            color: var(--message-bot-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+            border: 1px solid var(--message-bot-border);
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Input Area */
+        .input-area {
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 20px 20px;
+            padding: 20px;
+            border: 1px solid var(--container-border);
+            border-top: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            background: var(--input-focus-bg);
+            box-shadow: 0 0 20px var(--input-focus-shadow);
+        }
+
+        .message-input::placeholder {
+            color: var(--input-placeholder);
+        }
+
+        .send-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .send-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 18px;
+            background: var(--message-bot-bg);
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            max-width: 80px;
+            align-self: flex-start;
+            border: 1px solid var(--message-bot-border);
+            transition: all 0.3s ease;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--typing-dot);
+            animation: typing 1.4s infinite ease-in-out;
+            transition: background 0.3s ease;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .chat-area::-webkit-scrollbar,
+        .content-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-area::-webkit-scrollbar-track,
+        .content-area::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+        }
+
+        .chat-area::-webkit-scrollbar-thumb,
+        .content-area::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 3px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb:hover,
+        .content-area::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chatbot-container {
+                padding: 10px;
+            }
+
+            .chatbot-title {
+                font-size: 20px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .message-input {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+
+            .send-button {
+                width: 45px;
+                height: 45px;
+            }
+
+            .nav-button {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .nav-menu {
+                right: 10px;
+                top: 70px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chatbot-container {
+                padding: 5px;
+            }
+
+            .chatbot-header,
+            .input-area {
+                padding: 15px;
+            }
+
+            .chat-area,
+            .content-area {
+                padding: 15px;
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hidden checkbox for theme toggle -->
+    <input type="checkbox" id="theme-toggle">
+
+    <!-- Animated Background Shapes -->
+    <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <!-- Navigation buttons -->
+    <a href="/" class="nav-button" id="backButton">←</a>
+    <div class="nav-button menu-button" id="menuButton" onclick="toggleMenu()">☰</div>
+
+    <!-- Navigation menu -->
+    <div class="nav-menu" id="navMenu">
+        <div class="nav-menu-item" onclick="showPage('chat')">Chat</div>
+        <div class="nav-menu-item" onclick="showPage('settings')">Settings</div>
+        <div class="nav-menu-item" onclick="showPage('about')">About</div>
+        <div class="nav-menu-item" onclick="showPage('help')">Help</div>
+    </div>
+
+    <!-- Chat Page (Main Page) -->
+    <div class="page active" id="chatPage">
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <div class="theme-toggle-container">
+                    <label for="theme-toggle" class="theme-toggle-label">
+                        <span class="theme-icon sun">☀️</span>
+                        <div class="toggle-slider"></div>
+                        <span class="theme-icon moon">🌙</span>
+                    </label>
+                </div>
+                
+                <h1 class="chatbot-title">AI Assistant</h1>
+                <p class="chatbot-subtitle">How can I help you today?</p>
+            </div>
+
+            <div class="chat-area" id="chatArea">
+                <div class="message bot">
+                    Hello! I'm your AI assistant. Feel free to ask me anything!
+                </div>
+                <div class="message user">
+                    Hi there! How are you doing today?
+                </div>
+                <div class="message bot">
+                    I'm doing great, thank you for asking! I'm here and ready to help you with any questions or tasks you might have. What would you like to know or discuss?
+                </div>
+                
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        class="message-input" 
+                        id="messageInput"
+                        placeholder="Type your message here..."
+                        maxlength="500"
+                    >
+                    <button class="send-button" id="sendButton">
+                        ➤
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="page" id="settingsPage">
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <div class="theme-toggle-container">
+                    <label for="theme-toggle" class="theme-toggle-label">
+                        <span class="theme-icon sun">☀️</span>
+                        <div class="toggle-slider"></div>
+                        <span class="theme-icon moon">🌙</span>
+                    </label>
+                </div>
+                
+                <h1 class="chatbot-title">Settings</h1>
+                <p class="chatbot-subtitle">Customize your chat experience</p>
+            </div>
+
+            <div class="content-area">
+                <h2>Chat Settings</h2>
+                
+                <div class="settings-option">
+                    <label>Animation Speed</label>
+                    <input type="range" min="1" max="10" value="5">
+                </div>
+                
+                <div class="settings-option">
+                    <label>Message Font Size</label>
+                    <input type="range" min="12" max="20" value="16">
+                </div>
+                
+                <div class="settings-option">
+                    <label>Auto-scroll Chat</label>
+                    <input type="checkbox" checked>
+                </div>
+                
+                <div class="settings-option">
+                    <label>Sound Effects</label>
+                    <input type="checkbox">
+                </div>
+
+                <h3>Appearance</h3>
+                <p>Use the theme toggle in the top-right corner to switch between light and dark modes. The theme will be applied across all pages for a consistent experience.</p>
+
+                <h3>Privacy</h3>
+                <p>Your conversations are processed locally and not stored on our servers. All chat data remains private and secure.</p>
+            </div>
+
+            <div class="input-area">
+                <div style="text-align: center; color: var(--text-secondary);">
+                    Settings are automatically saved
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Page -->
+    <div class="page" id="aboutPage">
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <div class="theme-toggle-container">
+                    <label for="theme-toggle" class="theme-toggle-label">
+                        <span class="theme-icon sun">☀️</span>
+                        <div class="toggle-slider"></div>
+                        <span class="theme-icon moon">🌙</span>
+                    </label>
+                </div>
+                
+                <h1 class="chatbot-title">About</h1>
+                <p class="chatbot-subtitle">Learn more about this AI assistant</p>
+            </div>
+
+            <div class="content-area">
+                <h2>AI Assistant v2.0</h2>
+                
+                <p>Welcome to our advanced AI chatbot interface! This responsive web application provides an intuitive and engaging way to interact with artificial intelligence.</p>
+
+                <h3>Features</h3>
+                <ul>
+                    <li>Responsive design that works on all devices</li>
+                    <li>Beautiful animated background with floating shapes</li>
+                    <li>Dark and light theme support</li>
+                    <li>Smooth animations and transitions</li>
+                    <li>Real-time typing indicators</li>
+                    <li>Glass-morphism design effects</li>
+                    <li>Multi-page navigation system</li>
+                </ul>
+
+                <h3>Technology</h3>
+                <p>Built with modern web technologies including HTML5, CSS3, and JavaScript. The interface uses advanced CSS features like backdrop-filter, CSS variables, and keyframe animations to create a polished user experience.</p>
+
+                <h3>Accessibility</h3>
+                <p>Designed with accessibility in mind, featuring proper contrast ratios, keyboard navigation support, and responsive design that adapts to different screen sizes and devices.</p>
+            </div>
+
+            <div class="input-area">
+                <div style="text-align: center; color: var(--text-secondary);">
+                    Made with ❤️ for better AI interactions
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Page -->
+    <div class="page" id="helpPage">
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <div class="theme-toggle-container">
+                    <label for="theme-toggle" class="theme-toggle-label">
+                        <span class="theme-icon sun">☀️</span>
+                        <div class="toggle-slider"></div>
+                        <span class="theme-icon moon">🌙</span>
+                    </label>
+                </div>
+                
+                <h1 class="chatbot-title">Help</h1>
+                <p class="chatbot-subtitle">Get help using the AI assistant</p>
+            </div>
+
+            <div class="content-area">
+                <h2>How to Use</h2>
+                
+                <h3>Starting a Conversation</h3>
+                <p>Simply type your message in the input field at the bottom of the chat page and press Enter or click the send button. The AI will respond to your questions and engage in conversation.</p>
+
+                <h3>Navigation</h3>
+                <p>Use the menu button (☰) in the top-right corner to access different pages:</p>
+                <ul>
+                    <li><strong>Chat:</strong> Main conversation interface</li>
+                    <li><strong>Settings:</strong> Customize your experience</li>
+                    <li><strong>About:</strong> Learn about the application</li>
+                    <li><strong>Help:</strong> This help page</li>
+                </ul>
+
+                <h3>Theme Switching</h3>
+                <p>Toggle between light and dark modes using the sun/moon switch in the top-right corner of any page. Your preference will be maintained across all pages.</p>
+
+                <h3>Tips for Better Conversations</h3>
+                <ul>
+                    <li>Be specific in your questions for more accurate responses</li>
+                    <li>Feel free to ask follow-up questions</li>
+                    <li>The AI can help with various topics and tasks</li>
+                    <li>Use the typing indicator to know when the AI is responding</li>
+                </ul>
+
+                <h3>Troubleshooting</h3>
+                <p>If you experience any issues, try refreshing the page. The interface is designed to work on all modern browsers and devices.</p>
+            </div>
+
+            <div class="input-area">
+                <div style="text-align: center; color: var(--text-secondary);">
+                    Need more help? Start a conversation in the Chat page!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatArea = document.getElementById('chatArea');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const navMenu = document.getElementById('navMenu');
+        const backButton = document.getElementById('backButton');
+
+        // Page navigation functions
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId + 'Page').classList.add('active');
+            
+            // Show/hide back button
+            if (pageId === 'chat') {
+                backButton.style.display = 'none';
+            } else {
+                backButton.style.display = 'flex';
+            }
+            
+            // Hide menu
+            navMenu.classList.remove('active');
+        }
+
+        function toggleMenu() {
+            navMenu.classList.toggle('active');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menuButton = document.getElementById('menuButton');
+            if (!navMenu.contains(event.target) && !menuButton.contains(event.target)) {
+                navMenu.classList.remove('active');
+            }
+        });
+
+        // Chat functionality
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.textContent = text;
+            
+            typingIndicator.style.display = 'none';
+            
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'flex';
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                messageInput.value = '';
+                
+                showTypingIndicator();
+                
+                setTimeout(() => {
+                    const responses = [
+                        "That's interesting! Tell me more about that.",
+                        "I understand. How can I help you with this?",
+                        "Thanks for sharing! Is there anything specific you'd like to know?",
+                        "Great question! Let me think about that for a moment.",
+                        "I see what you mean. Would you like me to elaborate on any particular aspect?"
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse);
+                }, 1500);
+            }
+            
+        }
+
+        // Event listeners
+        if (sendButton) {
+            sendButton.addEventListener('click', sendMessage);
+        }
+        
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Auto-focus input on load
+            messageInput.focus();
+        }
+    </script>
+</body>
+</html>
