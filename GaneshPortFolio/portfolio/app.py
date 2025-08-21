@@ -15,8 +15,8 @@ conn = sqlite3.connect('portfolio.db')
 c = conn.cursor()
 
 load_dotenv()
-EMAIL_ADDRESS ="ganeshraut.contact@gmail.com"
-EMAIL_PASSWORD ="fphw ggit mhrf eaxw"
+EMAIL_ADDRESS ="email_address
+EMAIL_PASSWORD ="password"
 
 print(repr(EMAIL_ADDRESS))   # ✅ Should show: 'parampariksarees@gmail.com'
 print(repr(EMAIL_PASSWORD))  # ✅ Should show: 'ecsovqgrdmqjlsmo'
@@ -734,8 +734,8 @@ def reply_message(id):
         try:
             smtp_server = "smtp.gmail.com"
             smtp_port = 587
-            sender_email = "ganeshraut.contact@gmail.com"
-            sender_pass = "fphw ggit mhrf eaxw"
+            sender_email = "enter_email"
+            sender_pass = "enter_passwod"
 
             msg = MIMEText(reply_text)
             msg["Subject"] = f"Reply to your message: {name}"
@@ -835,3 +835,4 @@ if __name__ == '__main__':
     # debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     # app.run(debug=debug_mode)
     app.run(debug=True)
+
